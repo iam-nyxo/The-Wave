@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Wave — Neo Wave Trading Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="app-header">
+  <div class="header-section header-left">
+    <div class="brand">
+      <svg class="brand-icon" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M1 18C4 18 4 6 8 6C12 6 12 20 16 20C20 20 20 4 24 4C28 4 28 16 32 16C36 16 36 10 39 10" stroke="url(#waveGrad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs>
+          <linearGradient id="waveGrad" x1="1" y1="12" x2="39" y2="12" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#2962FF"/>
+            <stop offset="1" stop-color="#00E5FF"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-name">The Wave</span>
+        <span class="brand-badge">Neo Wave Engine v1.0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-section header-center">
+    <div class="pill-group" id="asset-group" role="group" aria-label="Select asset">
+      <button class="pill pill-asset is-active" data-asset="NAS100">NAS100</button>
+      <button class="pill pill-asset" data-asset="US30">US30</button>
+      <button class="pill pill-asset" data-asset="XAUUSD">XAUUSD</button>
+    </div>
+    <div class="pill-divider" aria-hidden="true"></div>
+    <div class="pill-group" id="timeframe-group" role="group" aria-label="Select timeframe">
+      <button class="pill pill-tf" data-tf="1M">1m</button>
+      <button class="pill pill-tf" data-tf="5M">5m</button>
+      <button class="pill pill-tf is-active" data-tf="15M">15m</button>
+      <button class="pill pill-tf" data-tf="1H">1h</button>
+      <button class="pill pill-tf" data-tf="4H">4h</button>
+      <button class="pill pill-tf" data-tf="1D">1D</button>
+      <button class="pill pill-tf" data-tf="8D">8D</button>
+      <button class="pill pill-tf" data-tf="1m">1M</button>
+      <button class="pill pill-tf" data-tf="12M">12M</button>
+    </div>
+  </div>
+
+  <div class="header-section header-right">
+    <div class="status-indicator" id="engine-status">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span class="status-text">FastAPI Engine: <strong>Connected</strong></span>
+    </div>
+    <button class="icon-btn" id="refresh-btn" title="Refresh data" aria-label="Refresh data">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M16.5 10a6.5 6.5 0 1 1-2.1-4.8M16.5 10V4.5M16.5 10h-5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ============ MAIN WORKSPACE ============ -->
+<main class="workspace">
+  <section class="chart-panel" aria-label="Price chart">
+    <div class="overlay-bar">
+      <div class="overlay-toggles">
+        <label class="toggle">
+          <input type="checkbox" id="toggle-monomoves" checked />
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">Show Monomoves</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-wave-labels" checked />
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">Show Wave Labels</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-autofit" checked />
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">Auto-fit Chart</span>
+        </label>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-logscale" checked />
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">Log Scale</span>
+        </label>
+      </div>
+      <div class="chart-meta">
+        <span class="chart-symbol" id="chart-symbol-label">NAS100</span>
+        <span class="chart-tf" id="chart-tf-label">15M</span>
+        <span class="chart-price" id="chart-last-price">— </span>
+      </div>
+    </div>
+    <div class="chart-container" id="chart-container"></div>
+  </section>
+
+  <aside class="inspector-panel" aria-label="Wave analytics">
+    <section class="card">
+      <header class="card-header"><h2 class="card-title">Active Monomove Metrics</h2></header>
+      <div class="card-body metrics-grid">
+        <div class="metric"><span class="metric-label">Total Monomoves</span><span class="metric-value mono" id="metric-total-monomoves">—</span></div>
+        <div class="metric"><span class="metric-label">Wave Direction</span><span class="badge badge-up" id="metric-direction">UP</span></div>
+        <div class="metric"><span class="metric-label">Latest Height</span><span class="metric-value mono" id="metric-height">—</span></div>
+        <div class="metric"><span class="metric-label">Duration</span><span class="metric-value mono" id="metric-duration">—</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <header class="card-header"><h2 class="card-title">Neo Wave Pattern Status</h2></header>
+      <div class="card-body">
+        <p class="pattern-name" id="pattern-name">Impulse Wave 3 in Progress</p>
+        <div class="confidence-row"><span class="metric-label">Confidence Score</span><span class="confidence-value mono" id="confidence-value">88%</span></div>
+        <div class="confidence-bar"><div class="confidence-fill" id="confidence-fill" style="width:88%"></div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <header class="card-header"><h2 class="card-title">Fibonacci Time &amp; Price Ratios</h2></header>
+      <div class="card-body">
+        <table class="fib-table">
+          <thead><tr><th>Ratio</th><th>Target Price</th><th>Time Elapsed</th></tr></thead>
+          <tbody id="fib-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<section class="drawer" id="drawer">
+  <button class="drawer-header" id="drawer-toggle">
+    <span class="drawer-title">Monomove Vector Logs</span>
+    <span class="drawer-count" id="drawer-count">0 vectors</span>
+  </button>
+  <div class="drawer-body">
+    <div class="table-scroll">
+      <table class="vector-table">
+        <thead>
+          <tr><th>Vector ID</th><th>Direction</th><th>Start Time &amp; Price</th><th>End Time &amp; Price</th><th>Height (ΔP)</th><th>Duration (ΔT)</th></tr>
+        </thead>
+        <tbody id="vector-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
